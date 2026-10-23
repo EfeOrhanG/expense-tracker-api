@@ -1,8 +1,5 @@
 # expense-tracker-api
-RESTful Expense Tracker API built with ASP.NET Core, EF Core, SQLite, and JWT Authentication.
-
-Expense Tracker API
-A RESTful API for tracking personal expenses.
+Expense Tracker API built with ASP.NET Core, EF Core, SQLite, and JWT Authentication.
 
 Planned Features
 
