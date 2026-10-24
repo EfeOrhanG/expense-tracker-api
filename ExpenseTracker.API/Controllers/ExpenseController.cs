@@ -1,9 +1,6 @@
-using System;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.API.DTOs;
 using ExpenseTracker.API.Data;
-using Microsoft.AspNetCore.Identity;
-using ExpenseTracker.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using ExpenseTracker.API.Models;
 using System.Security.Claims;
@@ -16,12 +13,10 @@ namespace ExpenseTracker.API.Controllers;
 public class ExpenseController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly JwtService _tokenService;
 
-    public ExpenseController(AppDbContext context, JwtService tokenService)
+    public ExpenseController(AppDbContext context)
     {
         _context = context;
-        _tokenService = tokenService;
     }
 
     [HttpPost]
@@ -69,8 +64,24 @@ public class ExpenseController : ControllerBase
     [Authorize]
     public IActionResult GetExpenseById(Guid id)
     {
-        // Implement the logic to retrieve an expense by ID
-        return Ok(new { Message = $"Expense with ID {id} retrieved successfully." });
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var expense = _context.Expenses
+            .FirstOrDefault(x => x.Id == id && x.UserId == userId);
+
+        if (expense is null)
+        {
+            return NotFound(new { Message = $"Expense with ID {id} was not found." });
+        }
+
+        return Ok(new
+        {
+            Message = $"Expense with ID {id} retrieved successfully.",
+            Result = expense
+        });
     }
 
 
@@ -78,7 +89,22 @@ public class ExpenseController : ControllerBase
     [Authorize]
     public IActionResult DeleteExpense(Guid id)
     {
-        // Implement the logic to delete an expense
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var expense = _context.Expenses
+            .FirstOrDefault(x => x.Id == id && x.UserId == userId);
+
+        if (expense is null)
+        {
+            return NotFound(new { Message = $"Expense with ID {id} was not found." });
+        }
+
+        _context.Expenses.Remove(expense);
+        _context.SaveChanges();
+
         return Ok(new { Message = $"Expense with ID {id} deleted successfully." });
     }
 
@@ -86,15 +112,87 @@ public class ExpenseController : ControllerBase
     [Authorize]
     public IActionResult UpdateExpense(Guid id, [FromBody] UpdateExpenseRequest request)
     {
-        // Implement the logic to update an expense
-        return Ok(new { Message = $"Expense with ID {id} updated successfully." });
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var expense = _context.Expenses
+            .FirstOrDefault(x => x.Id == id && x.UserId == userId);
+
+        if (expense is null)
+        {
+            return NotFound(new { Message = $"Expense with ID {id} was not found." });
+        }
+
+        if (request.Description is not null)
+        {
+            expense.Description = request.Description;
+        }
+
+        if (request.Amount.HasValue)
+        {
+            expense.Amount = request.Amount.Value;
+        }
+
+        if (request.Date.HasValue)
+        {
+            expense.ExpenseDate = request.Date.Value;
+        }
+
+        _context.SaveChanges();
+
+        return Ok(new
+        {
+            Message = $"Expense with ID {id} updated successfully.",
+            Expense = expense
+        });
     }
 
-    public IActionResult GetExpensesByPeriod(string period)
+    [HttpGet("period")]
+    [Authorize]
+    public IActionResult GetExpensesByPeriod([FromQuery] string period)
     {
-        // Implement the logic to retrieve expenses by period
-        return Ok(new { Message = $"Expenses for period '{period}' retrieved successfully." });
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var now = DateTime.UtcNow;
+        var startDate = period.Trim().ToLowerInvariant() switch
+        {
+            "last-week" => now.AddDays(-7),
+            "last-month" => now.AddMonths(-1),
+            "last-3-months" => now.AddMonths(-3),
+            _ => (DateTime?)null
+        };
+
+        if (startDate is null)
+        {
+            return BadRequest(new
+            {
+                Message = "Period must be last-week, last-month, or last-3-months."
+            });
+        }
+
+        var expenses = _context.Expenses
+            .Where(x => x.UserId == userId &&
+                        x.ExpenseDate >= startDate.Value &&
+                        x.ExpenseDate <= now)
+            .ToList();
+
+        return Ok(new
+        {
+            Message = $"Expenses for period '{period}' retrieved successfully.",
+            Result = expenses
+        });
     }
 
+    private bool TryGetUserId(out Guid userId)
+    {
+        return Guid.TryParse(
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+            out userId);
+    }
 
 }

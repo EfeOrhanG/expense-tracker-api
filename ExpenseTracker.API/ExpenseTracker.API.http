@@ -1,7 +1,5 @@
 @API_HostAddress = http://localhost:5077
 @token = <JWT_TOKEN>
-### Test
-GET {{API_HostAddress}}/api/auth/ping
 
 ### Register a new user
 POST {{API_HostAddress}}/api/auth/register
@@ -22,21 +20,51 @@ Content-Type: application/json
     "password": "password"
 }
 
-###
+### EXPENSES
 
 GET {{API_HostAddress}}/api/expenses/list
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
-###
+### CREATE EXPENSE
 
 POST {{API_HostAddress}}/api/expenses
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "description": "Electronic device",
+    "description": "Electronic Device",
     "amount": 2000,
     "category": "Electronics"
 }
 
+
+### GET EXPENSE BY ID
+
+GET {{API_HostAddress}}/api/expenses/<EXPENSE_ID>
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### DELETE EXPENSE
+
+DELETE  {{API_HostAddress}}/api/expenses/<EXPENSE_ID>
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### FILTER EXPENSE
+
+GET {{API_HostAddress}}/api/expenses/period?period=last-week
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### UPDATE EXPENSE
+
+PUT {{API_HostAddress}}/api/expenses/<EXPENSE_ID>
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "amount" : 300
+}
