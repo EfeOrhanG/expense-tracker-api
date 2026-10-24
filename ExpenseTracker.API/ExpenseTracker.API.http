@@ -1,6 +1,42 @@
-@ExpenseTracker.API_HostAddress = http://localhost:5077
+@API_HostAddress = http://localhost:5077
+@token = <JWT_TOKEN>
+### Test
+GET {{API_HostAddress}}/api/auth/ping
 
-GET {{ExpenseTracker.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register a new user
+POST {{API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "roadmap@example.com",
+    "username": "roadmap",
+    "password": "password"
+}
+
+### Log in
+POST {{API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "roadmap@example.com",
+    "password": "password"
+}
 
 ###
+
+GET {{API_HostAddress}}/api/expenses/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+POST {{API_HostAddress}}/api/expenses
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Electronic device",
+    "amount": 2000,
+    "category": "Electronics"
+}
+
