@@ -14,4 +14,5 @@ Tech Stack
 * SQLite
 * Entity Framework Core
 * JWT
-🚧 Work in progress
+
+https://roadmap.sh/projects/expense-tracker-api
