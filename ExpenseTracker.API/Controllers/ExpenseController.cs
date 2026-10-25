@@ -149,6 +149,35 @@ public class ExpenseController : ControllerBase
         });
     }
 
+    [HttpGet("range")]
+    [Authorize]
+    public IActionResult GetExpensesByDateRange(
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate)
+        {
+            if (startDate > endDate)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Start date cannot be greater than end date."
+                    });
+                }
+            
+            if (!TryGetUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+                var end = endDate.Date.AddDays(1);
+                var expenses = _context.Expenses
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.ExpenseDate >= startDate &&
+                    x.ExpenseDate < end)
+                .ToList();
+
+                return Ok(expenses);
+        }
+
     [HttpGet("period")]
     [Authorize]
     public IActionResult GetExpensesByPeriod([FromQuery] string period)

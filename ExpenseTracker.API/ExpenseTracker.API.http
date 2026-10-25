@@ -58,6 +58,12 @@ GET {{API_HostAddress}}/api/expenses/period?period=last-week
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
+### FILTER BY DATE
+
+GET {{API_HostAddress}}/api/expenses/range?startDate=<START_DATE> 14:02:35.2461657&endDate=<END_DATE>
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
 
 ### UPDATE EXPENSE
 
@@ -68,3 +74,4 @@ Authorization: Bearer {{token}}
 {
     "amount" : 300
 }
+
