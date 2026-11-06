@@ -9,6 +9,5 @@ Repository Setup
 Project Initialization
 
 * Create ASP.NET Core Web API project
-* Configure Swagger
 * Configure SQLite
 * Configure Entity Framework Core ...
